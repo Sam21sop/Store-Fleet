@@ -11,6 +11,7 @@ import {
   getTotalCountsOfProduct,
   updateProductRepo,
 } from "../model/product.repository.js";
+
 import ProductModel from "../model/product.schema.js";
 
 
@@ -33,6 +34,38 @@ export const addNewProduct = async (req, res, next) => {
 
 export const getAllProducts = async (req, res, next) => {
   // Implement the functionality for search, filter and pagination this function.
+  try {
+    const {page = 1, limit = 10, search = '', filters = {}} = req.query;
+
+    // Build the filter criteria based on serach and filter
+    const filterCriteria = {
+      $or:[
+        {name:{$regex: new RegExp(search, 'i')}},
+        {description:{$regex:new RegExp(search, 'i')}}
+      ],
+      ...filters
+    };
+
+    // Perform the database query with pagination and filtering
+    const products = await getAllProductsRepo({
+      filterCriteria,
+      page:parseInt(page),
+      limit: parseInt(limit)
+    });
+
+    // get the total count of product for pagination
+    const totalProduct = await getTotalCountsOfProduct(filterCriteria);
+
+    // send response to client
+    res.status(200).send({
+      products,
+      currentPage:parseInt(page),
+      totalPages:Math.ceil(totalProduct/limit)
+    });
+
+  } catch (error) {
+    return next(new ErrorHandler(500, "Internal Server Error!", error.message));
+  }
   
 };
 

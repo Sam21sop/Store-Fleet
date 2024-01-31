@@ -25,9 +25,7 @@ router.route("/update/:id").put(auth, authByUserRole("admin"), updateProduct);
 
 // DELETE ROUTE
 // Admin only
-router
-  .route("/delete/:id")
-  .delete(auth, authByUserRole("admin"), deleteProduct);
+router.route("/delete/:id").delete(auth, authByUserRole("admin"), deleteProduct);
 
 // POST Routes User
 router.route("/rate/:id").put(auth, rateProduct);
