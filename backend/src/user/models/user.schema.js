@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import validator from "validator";
-import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import processEnvVar from "../../../utils/processDotEnv.js";
@@ -61,7 +60,6 @@ userSchema.pre("save", async function(next) {
 
 // JWT Token
 userSchema.methods.getJWTToken = function() {
-  // console.log("hit token: ", processEnvVar.JWT_Secret);
   return jwt.sign({ id: this._id }, processEnvVar.JWT_Secret, {
     expiresIn: processEnvVar.JWT_Expire,
   });
@@ -73,9 +71,8 @@ userSchema.methods.comparePassword = async function(password){
 };
 
 // generatePasswordResetToken
-userSchema.methods.getResetPasswordToken = async () => {
+userSchema.methods.getResetPasswordToken = async function(){
   const resetToken = crypto.randomBytes(20).toString("hex");
-
   // hashing and updating user resetPasswordToken
   this.resetPasswordToken = crypto
     .createHash("sha256")

@@ -36,17 +36,13 @@ router.route("/logout").get(auth, logoutUser);
 
 // Admin GET Routes
 router.route("/admin/allusers").get(auth, authByUserRole("admin"), getAllUsers);
-router
-  .route("/admin/details/:id")
-  .get(auth, authByUserRole("admin"), getUserDetailsForAdmin);
+router.route("/admin/details/:id").get(auth, authByUserRole("admin"), getUserDetailsForAdmin);
 
 // Admin DELETE Routes
-router
-  .route("/admin/delete/:id")
-  .delete(auth, authByUserRole("admin"), deleteUser);
+router.route("/admin/delete/:id").delete(auth, authByUserRole("admin"), deleteUser);
 
 // Admin PUT Routes
 // Implement route for updating role of other users
-// Write your code here
+router.route("/admin/update/:id").put(auth, authByUserRole("admin"), updateUserProfileAndRole);
 
 export default router;

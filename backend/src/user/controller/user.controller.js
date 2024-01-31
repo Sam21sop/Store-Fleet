@@ -18,7 +18,7 @@ import crypto from "crypto";
 
 
 export const createNewUser = async (req, res, next) => {
-  const {email} = req.body;
+  const { email } = req.body;
 
   try {
     const user = await findUserRepo({ email }, true);
@@ -75,11 +75,74 @@ export const logoutUser = async (req, res, next) => {
 };
 
 export const forgetPassword = async (req, res, next) => {
-  // Implement feature for forget password
+  // get the required data from the req.body object
+  const { email } = req.body;
+
+  try {
+    // find the user by email
+    const user = await findUserRepo({ email }, true);
+    if (!user) {
+      // user not found
+      return next(new ErrorHandler(404, "User not found! Enter valid Email."));
+    }
+
+    // get password reset token
+    const resetToken = await user.getResetPasswordToken();
+
+    // send password reset email
+    await sendPasswordResetEmail(user, resetToken);
+
+    // save the updated user
+    await user.save();
+
+    // send proper response
+    res
+      .status(200)
+      .json({
+        success: true,
+        msg: "Password reset link sent to your email'",
+        resetToken: user.resetPasswordToken,
+      });
+  } catch (error) {
+    return next(new ErrorHandler(404, error));
+  }
 };
 
 export const resetUserPassword = async (req, res, next) => {
-  // Implement feature for reset password
+  // get the data from req body
+  const { password, confirmPassword } = req.body;
+  const resetToken = req.params.token;
+
+  try {
+    // find the user by the reset token
+    const user = await findUserForPasswordResetRepo(resetToken);
+    if (!user) {
+      // if user not found
+      return next(new ErrorHandler(404, "User not found!"));
+    }
+
+    // check if password and confirmPassword are the same
+    if (password !== confirmPassword) {
+      return next(new ErrorHandler(400, "Does not Match ConfirmPassword"));
+    }
+
+    // update old password with new password
+    user.password = password;
+
+    // clear the reset token and expiration
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    // save the user
+    await user.save();
+
+    // send response to client
+    res
+      .status(200)
+      .send({ message: "Password reset successfully", success: true });
+  } catch (error) {
+    return next(new ErrorHandler(500, "Internal Server Error!"));
+  }
 };
 
 export const getUserDetails = async (req, res, next) => {
@@ -174,4 +237,5 @@ export const deleteUser = async (req, res, next) => {
 
 export const updateUserProfileAndRole = async (req, res, next) => {
   // Write your code here for updating the roles of other users by admin
+
 };
