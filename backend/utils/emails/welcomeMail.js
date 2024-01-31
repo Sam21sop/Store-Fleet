@@ -16,7 +16,7 @@ const logoPath = path.resolve("backend", "public", "logo.png");
 export const sendWelcomeEmail = async (user) => {
   // create nodemailer transporter using nodemailer
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    service: processEnvVar.SMPT_SERVICE || "gmail",
     auth: {
       user: processEnvVar.STORFLEET_SMPT_MAIL,
       pass: processEnvVar.STORFLEET_SMPT_MAIL_PASSWORD,
