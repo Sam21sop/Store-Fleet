@@ -16,7 +16,6 @@ import {
 } from "../models/user.repository.js";
 import crypto from "crypto";
 
-
 export const createNewUser = async (req, res, next) => {
   const { email } = req.body;
 
@@ -96,13 +95,11 @@ export const forgetPassword = async (req, res, next) => {
     await user.save();
 
     // send proper response
-    res
-      .status(200)
-      .json({
-        success: true,
-        msg: "Password reset link sent to your email'",
-        resetToken: user.resetPasswordToken,
-      });
+    res.status(200).json({
+      success: true,
+      msg: "Password reset link sent to your email'",
+      resetToken: user.resetPasswordToken,
+    });
   } catch (error) {
     return next(new ErrorHandler(404, error));
   }
@@ -237,5 +234,46 @@ export const deleteUser = async (req, res, next) => {
 
 export const updateUserProfileAndRole = async (req, res, next) => {
   // Write your code here for updating the roles of other users by admin
+  // Get the data/info from the req.body object
+  const { name, email, role } = req.body;
 
+  try {
+    // find the user by id
+    const userToUpdate = await findUserRepo({ _id: req.params.id });
+    if (!userToUpdate) {
+      // user not found
+      return next(new ErrorHandler(404, "User Not Found!"));
+    }
+
+    // check if the role is not admin
+    if (!role || role !== "admin") {
+      return next(
+        new ErrorHandler(
+          403,
+          "Unauthorized! Only admins can update user profiles and roles."
+        )
+      );
+    }
+
+    // update the userprofile
+    if (name) {
+      userToUpdate.name = name;
+    }
+
+    if (email) {
+      userToUpdate.email = email;
+    }
+
+    if (role) {
+      userToUpdate.role = role;
+    }
+    // save the updated user
+    await updateUserProfileRepo(req.params.id, userToUpdate);
+
+    // Send a response to client
+    res.status(200).send({ message: "User Profile and Role Updated Successfully!" });
+  } catch (error) {
+    console.error('Error in updateUserProfileAndRole:', error);
+    return next(new ErrorHandler(500, "Server Error! Try again after some time."))
+  }
 };

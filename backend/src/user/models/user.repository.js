@@ -19,7 +19,7 @@ export const findUserForPasswordResetRepo = async (hashtoken) => {
 };
 
 export const updateUserProfileRepo = async (_id, data) => {
-  return await UserModel.findOneAndUpdate(_id, data, {
+  return await UserModel.findOneAndUpdate({_id}, data, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
